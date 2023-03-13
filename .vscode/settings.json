@@ -1,0 +1,3 @@
+{
+    "mypy.dmypyExecutable": "~/Documents/repos/fastapi-example/.venv/bin/dmypy"
+}
