@@ -1,11 +1,12 @@
 import logging
 import sqlite3
+from typing import Any
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
-from actions import get_sql_cursor, init_db, write_features_to_db
-from models import Features
+from actions import *
+from models import Features, query_model
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -27,6 +28,12 @@ def write_features(features: Features) -> None:
     logger.debug(features)
 
 
+@app.get("/features")
+def get_features(params: query_model = Depends()) -> Any:
+    query_dict = params.dict()
+    features = get_feature_by_id(cursor=cursor, id=query_dict.get("row_number"))
+    return features
+
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=8090)
+    uvicorn.run(app, port=8080)
