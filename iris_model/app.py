@@ -1,6 +1,6 @@
 import logging
 import sqlite3
-from typing import Any
+from typing import Union
 
 import uvicorn
 from fastapi import FastAPI, Depends
@@ -29,7 +29,7 @@ def write_features(features: Features) -> None:
 
 
 @app.get("/features")
-def get_features(params: query_model = Depends()) -> Any:
+def get_features(params: query_model = Depends()) -> Union[Features, str]:
     query_dict = params.dict()
     features = get_feature_by_id(cursor=cursor, id=query_dict.get("row_number"))
     return features

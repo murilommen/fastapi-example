@@ -1,3 +1,8 @@
 {
-    "mypy.dmypyExecutable": "~/Documents/repos/fastapi-example/.venv/bin/dmypy"
+    "mypy.dmypyExecutable": "~/Documents/repos/fastapi-example/.venv/bin/dmypy",
+    "python.testing.pytestArgs": [
+        "tests"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true
 }

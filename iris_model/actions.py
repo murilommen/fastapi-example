@@ -1,8 +1,8 @@
 import logging
 import sqlite3
-from typing import Optional
+from typing import Union, Optional
 
-from models import Features
+from iris_model.models import Features
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -11,9 +11,9 @@ DATABASE_URI = "local.db"
 _connection: sqlite3.Connection
 
 
-def get_sql_cursor() -> sqlite3.Cursor:
+def get_sql_cursor(connection: Optional[sqlite3.Connection] = None) -> sqlite3.Cursor:
     global _connection
-    _connection = sqlite3.connect(database=DATABASE_URI, check_same_thread=False)
+    _connection = connection or sqlite3.connect(database=DATABASE_URI, check_same_thread=False)
     return _connection.cursor()
 
 
@@ -23,7 +23,15 @@ def init_db(cursor: sqlite3.Cursor) -> None:
     )
 
 
-def write_features_to_db(cursor: sqlite3.Cursor, features: Features) -> None:
+def write_features_to_db(
+        cursor: sqlite3.Cursor, 
+        features: Features, 
+        connection: Optional[sqlite3.Connection] = None
+    ) -> None:
+    connection = _connection or connection
+    if not connection:
+        raise ValueError("you must define a sqlite connection")
+    
     query = "INSERT INTO iris_dataset(sepal_length, sepal_width, petal_length, petal_width) VALUES (?,?,?,?)"
     values_tuple = (
         features.sepal_length, 
@@ -32,12 +40,12 @@ def write_features_to_db(cursor: sqlite3.Cursor, features: Features) -> None:
         features.petal_width
     )
     cursor.execute(query, values_tuple)
-    _connection.commit()
+    connection.commit()
     logger.debug(f"{features} written successfully to DB!")
 
 
-def get_feature_by_id(cursor: sqlite3.Cursor, id: int) -> Optional[Features]:
-    result = cursor.execute(f"SELECT * FROM iris_dataset WHERE id=?", (id,))
+def get_feature_by_id(cursor: sqlite3.Cursor, id: int) -> Union[Features, str]:
+    result = cursor.execute("SELECT * FROM iris_dataset WHERE id=?", (id,))
     data = result.fetchone()
     logger.debug(f"result_data_is {data}")
     if data:
@@ -50,4 +58,4 @@ def get_feature_by_id(cursor: sqlite3.Cursor, id: int) -> Optional[Features]:
 
         return features
     else:
-        return
+        return f"Did not find anything with id = {id}" 
